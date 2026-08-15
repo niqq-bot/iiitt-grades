@@ -1,0 +1,16 @@
+meta {
+  name: View Marks
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/faculty/marks/view
+  body: none
+  auth: none
+}
+
+params:query {
+  classCode: {{classCode}}
+  subjectCode: {{subjectCode}}
+}

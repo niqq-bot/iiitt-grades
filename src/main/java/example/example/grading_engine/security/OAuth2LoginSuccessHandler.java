@@ -1,9 +1,9 @@
 package example.example.grading_engine.security;
-
 import example.example.grading_engine.model.entity.User;
 import example.example.grading_engine.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -20,6 +20,8 @@ public class OAuth2LoginSuccessHandler
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
 
     public OAuth2LoginSuccessHandler(
             UserRepository userRepository,
@@ -76,6 +78,6 @@ public class OAuth2LoginSuccessHandler
         response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-        response.sendRedirect("http://localhost:8080/api/auth/me");  //change later to where frontend wants to go app.frontend.url
+        response.sendRedirect(frontendUrl + "/api/auth/me");  //change later to where frontend wants to go app.frontend.url
     }
 }

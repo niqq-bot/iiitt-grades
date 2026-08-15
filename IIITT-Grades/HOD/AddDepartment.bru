@@ -1,0 +1,15 @@
+meta {
+  name: AddDepartment
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/hod/departments/addDepartment
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

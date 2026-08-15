@@ -1,0 +1,15 @@
+meta {
+  name: Upload Marks
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/faculty/marks/upload
+  body: none
+  auth: none
+}
+
+docs {
+  Multipart upload: field `file` with the Excel file.
+}

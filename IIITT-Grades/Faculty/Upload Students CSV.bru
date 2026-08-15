@@ -1,0 +1,15 @@
+meta {
+  name: Upload Students CSV
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/faculty/internal/students/csv
+  body: none
+  auth: none
+}
+
+docs {
+  Multipart upload: field `file` with the CSV file.
+}

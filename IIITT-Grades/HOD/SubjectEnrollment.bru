@@ -6,10 +6,23 @@ meta {
 
 post {
   url: {{baseUrl}}/api/hod/subject_enrollments/assign
-  body: none
-  auth: inherit
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "classCode": "CSE-A",
+    "subjectId": "1059d645-a01e-4255-89c6-6e9bb82eaa53",
+    "sessionId": "84878ba3-dc51-4353-a991-14dc22aa9b13"
+  }
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

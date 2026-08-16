@@ -56,7 +56,7 @@ public class MarksUploadController {
         String email = getString(sheet,1,1);
         String subjectName = getString(sheet,2,1);
         String subjectCode = getString(sheet,3,1);
-        int sem = Integer.parseInt(getString(sheet,4,1));
+        int sem = (int) sheet.getRow(4).getCell(1).getNumericCellValue();
         String academicYear = getString(sheet,5,1);
         String classcode = getString(sheet,6,1);
 

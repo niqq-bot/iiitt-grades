@@ -6,10 +6,24 @@ meta {
 
 post {
   url: {{baseUrl}}/api/hod/academic/addAcademicSession
-  body: none
-  auth: inherit
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "academicYear": "2026-27",
+    "semester": 1,
+    "regulationVersion": "R2024",
+    "gradingPolicyVersion": "GP1"
+  }
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

@@ -6,10 +6,30 @@ meta {
 
 post {
   url: {{baseUrl}}/api/hod/assign-faculty
-  body: none
-  auth: inherit
+  body: json
+  auth: bearer
+}
+
+headers {
+  X-USER-ID: 8233a356-9248-4243-9c3b-b2d17e83b4b3
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "facultyId": "0c823ba5-9114-48cc-86ab-6d53937e25c5",
+    "subjectId": "1059d645-a01e-4255-89c6-6e9bb82eaa53",
+    "academicYear": "2026-27",
+    "semester": 1,
+    "semesterType": "ODD",
+    "classCode": "CSE-A"
+  }
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

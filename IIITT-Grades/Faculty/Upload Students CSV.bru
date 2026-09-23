@@ -6,8 +6,12 @@ meta {
 
 post {
   url: {{baseUrl}}/api/faculty/internal/students/csv
-  body: none
+  body: json
   auth: none
+}
+
+body:multipart-form {
+  file: @file(D:\draov\Downloads\marks_upload_24cse.xlsx) @contentType(application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
 }
 
 docs {

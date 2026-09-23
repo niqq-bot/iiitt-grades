@@ -6,8 +6,12 @@ meta {
 
 post {
   url: {{baseUrl}}/api/faculty/marks/upload
-  body: none
-  auth: none
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file(D:\draov\Downloads\marks_upload_24cse_fixed.xlsx) @contentType(application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
 }
 
 docs {

@@ -11,7 +11,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -25,28 +27,6 @@ public class SecurityConfig {
     @Value("${app.frontend-url}")
     private String frontendUrl;
 
-    @Bean
-    AccessDeniedHandler accessDeniedHandler() {
-        AccessDeniedHandlerImpl handler = new AccessDeniedHandlerImpl();
-        handler.setErrorPage("/accessDenied");
-        return handler;
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(frontendUrl));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-
-        return source;
-    }
-
     private final JwtAuthenticationFilter jwtFilter;
     private final CustomOAuth2UserService oauthUserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
@@ -54,11 +34,60 @@ public class SecurityConfig {
     public SecurityConfig(
             JwtAuthenticationFilter jwtFilter,
             CustomOAuth2UserService oauthUserService,
-            JwtUtil jwtUtil, OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler
+            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler
     ) {
         this.jwtFilter = jwtFilter;
         this.oauthUserService = oauthUserService;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+    }
+
+    @Bean
+    AccessDeniedHandler accessDeniedHandler() {
+
+        AccessDeniedHandlerImpl handler =
+                new AccessDeniedHandlerImpl();
+
+        handler.setErrorPage("/accessDenied");
+
+        return handler;
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration config =
+                new CorsConfiguration();
+
+        config.setAllowedOrigins(
+                List.of(frontendUrl)
+        );
+
+        config.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE",
+                        "OPTIONS"
+                )
+        );
+
+        config.setAllowedHeaders(
+                List.of("*")
+        );
+
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/**",
+                config
+        );
+
+        return source;
     }
 
     @Bean
@@ -68,32 +97,105 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(
-                        s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+
+                .cors(cors ->
+                        cors.configurationSource(
+                                corsConfigurationSource()
+                        )
                 )
+
+                .csrf(AbstractHttpConfigurer::disable)
+
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                )
+
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/faculty/**").hasRole("FACULTY")
-                        .requestMatchers("/api/hod/**").hasRole("HOD")
-                        .requestMatchers("/api/student/**").hasRole("STUDENT")
+
+                        /*
+                         * Public authentication endpoints
+                         */
+                        .requestMatchers(
+                                "/api/auth/**"
+                        ).permitAll()
+
+                        /*
+                         * Swagger
+                         */
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+
+                        /*
+                         * Role-based APIs
+                         */
+                        .requestMatchers(
+                                "/api/faculty/**"
+                        ).hasRole("FACULTY")
+
+                        .requestMatchers(
+                                "/api/hod/**"
+                        ).hasRole("HOD")
+
+                        .requestMatchers(
+                                "/api/student/**"
+                        ).hasRole("STUDENT")
+
+                        /*
+                         * Everything else requires authentication
+                         */
                         .anyRequest().authenticated()
                 )
-//                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+
+                /*
+                 * IMPORTANT:
+                 *
+                 * If an API request is unauthenticated,
+                 * return 401 instead of redirecting to Google.
+                 */
                 .exceptionHandling(ex -> ex
-                        .accessDeniedHandler(accessDeniedHandler())
+
+                        .defaultAuthenticationEntryPointFor(
+                                new HttpStatusEntryPoint(
+                                        HttpStatus.UNAUTHORIZED
+                                ),
+                                request ->
+                                        request.getRequestURI()
+                                                .startsWith("/api/")
+                        )
+
+                        .accessDeniedHandler(
+                                accessDeniedHandler()
+                        )
                 )
+
+                /*
+                 * Google OAuth login remains unchanged.
+                 */
                 .oauth2Login(oauth -> oauth
-                        .userInfoEndpoint(u -> u.userService(oauthUserService))
-                        .successHandler(oAuth2LoginSuccessHandler)
+
+                        .userInfoEndpoint(userInfo ->
+                                userInfo.userService(
+                                        oauthUserService
+                                )
+                        )
+
+                        .successHandler(
+                                oAuth2LoginSuccessHandler
+                        )
                 )
+
+                /*
+                 * JWT authentication
+                 */
                 .addFilterBefore(
                         jwtFilter,
                         UsernamePasswordAuthenticationFilter.class
                 );
-
-
 
         return http.build();
     }

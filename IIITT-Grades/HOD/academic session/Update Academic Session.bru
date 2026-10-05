@@ -1,0 +1,24 @@
+meta {
+  name: Update Academic Session
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8080/api/academic-sessions/{{academicSessionId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "academicYear": "2026-27",
+    "semester": 5,
+    "regulationVersion": "R2025",
+    "gradingPolicyVersion": "GP2"
+  }
+}
